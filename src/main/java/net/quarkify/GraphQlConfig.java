@@ -55,6 +55,35 @@ IncomingWebRequestTracer tracer = oneAgentSdk.traceIncomingWebRequest(wsInfo,"ht
 
 
 
+/*
+for (Entry<String, String> headerField : httpRequest.getHeaders().entrySet()) {
+	incomingWebrequestTracer.addRequestHeader(headerField.getKey(), headerField.getValue());
+}
+
+for (Entry<String, List<String>> parameterEntry : httpRequest.getParameters().entrySet()) {
+	for (String value : parameterEntry.getValue()) {
+		incomingWebrequestTracer.addParameter(parameterEntry.getKey(), value);
+	}
+}
+
+incomingWebrequestTracer.setRemoteAddress(httpRequest.getRemoteHostName());
+*/
+
+/*tracer.start();
+try {
+	int statusCodeReturnedToClient = processWebRequest();
+	tracer.setStatusCode(statusCodeReturnedToClient);
+} catch (Exception e) {
+	tracer.setStatusCode(500); // we expect that the container sends HTTP 500 status code in case request processing throws an exception
+	tracer.error(e);
+	throw e;
+} finally {
+	tracer.end();
+}
+*/
+
+
+tracer.start();
 
 inProcessLinkTracer.start();
 	try {
@@ -89,6 +118,7 @@ oneAgentSdk.addCustomRequestAttribute("salesAmount", 2500);
 
         SchemaGenerator schemaGenerator = new SchemaGenerator();
         GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(teamsSchema, runtimeWiring);
+tracer.end();
 
         return GraphQL.newGraphQL(graphQLSchema).build();
     }

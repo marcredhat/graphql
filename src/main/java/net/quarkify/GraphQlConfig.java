@@ -1,5 +1,10 @@
 package net.quarkify;
+import java.util.List;
+import java.util.Map.Entry;
 
+import com.dynatrace.oneagent.sdk.OneAgentSDKFactory;
+import com.dynatrace.oneagent.sdk.api.OneAgentSDK;
+import com.dynatrace.oneagent.sdk.api.OutgoingWebRequestTracer;
 import graphql.GraphQL;
 import graphql.schema.*;
 import graphql.schema.idl.*;
@@ -33,6 +38,21 @@ public class GraphQlConfig {
 
     private GraphQL createGraphQL() throws Exception {
         TypeDefinitionRegistry teamsSchema = getTeamSchema();
+
+	System.out.println("*************************************************************");
+		System.out.println("**            Running webrequest sample                    **");
+		System.out.println("*************************************************************");
+		try {
+			WebRequestApp app = new WebRequestApp();
+			app.runFakedWebrequest();
+			// app.runIncomingWebrequest();
+			System.out.println("sample application stopped. sleeping a while, so OneAgent is able to send data to server ...");
+			Thread.sleep(15000 * 3); // we have to wait - so OneAgent is able to send data to server
+		} catch (Exception e) {
+			System.err.println("webrequest sample failed: " + e.getMessage());
+			e.printStackTrace();
+			System.exit(-1);
+		}
 
         RuntimeWiring runtimeWiring = RuntimeWiring.newRuntimeWiring()
                 .type("Query",

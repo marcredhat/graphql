@@ -1,7 +1,11 @@
 package net.quarkify;
 import java.util.List;
 import java.util.Map.Entry;
-
+import com.dynatrace.oneagent.sdk.api.infos.WebApplicationInfo;
+import com.dynatrace.oneagent.sdk.api.IncomingWebRequestTracer;
+//import com.dynatrace.oneagent.sdk.*;
+import com.dynatrace.oneagent.sdk.api.InProcessLinkTracer;
+import com.dynatrace.oneagent.sdk.api.InProcessLink;
 import com.dynatrace.oneagent.sdk.OneAgentSDKFactory;
 import com.dynatrace.oneagent.sdk.api.OneAgentSDK;
 import com.dynatrace.oneagent.sdk.api.OutgoingWebRequestTracer;
@@ -37,7 +41,31 @@ public class GraphQlConfig {
     }
 
     private GraphQL createGraphQL() throws Exception {
-        TypeDefinitionRegistry teamsSchema = getTeamSchema();
+	TypeDefinitionRegistry teamsSchema = getTeamSchema();
+        
+OneAgentSDK oneAgentSdk = OneAgentSDKFactory.createInstance();
+InProcessLink inProcessLink = oneAgentSdk.createInProcessLink();
+//Provide the returned inProcessLink to the code, that does the asynchronous execution:
+
+//OneAgentSDK oneAgentSdk = OneAgentSDKFactory.createInstance();
+InProcessLinkTracer inProcessLinkTracer = oneAgentSdk.traceInProcessLink(inProcessLink);
+
+WebApplicationInfo wsInfo = oneAgentSdk.createWebApplicationInfo("WebShopProduction", "CheckoutService", "/graphql");
+IncomingWebRequestTracer tracer = oneAgentSdk.traceIncomingWebRequest(wsInfo,"http://localhost:8080/graphql", "POST");
+
+
+
+
+inProcessLinkTracer.start();
+	try {
+	oneAgentSdk.addCustomRequestAttribute("region", "EMEA");
+oneAgentSdk.addCustomRequestAttribute("salesAmount", 2500);
+} catch (Exception e) {
+	inProcessLinkTracer.error(e);
+	// rethrow or add your exception handling
+} finally {
+	inProcessLinkTracer.end();
+}
 
 	System.out.println("*************************************************************");
 		System.out.println("**            Running webrequest sample                    **");
